@@ -1,7 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://b6tbxadormjlp"]
+[gd_scene load_steps=14 format=3 uid="uid://b6tbxadormjlp"]
 
 [ext_resource type="Shader" uid="uid://jjvcpb8im52u" path="res://addons/melvins_toon_addon/shaders/Outline.tres" id="1_do0ll"]
 [ext_resource type="Shader" uid="uid://lgr8llo7ynkp" path="res://addons/melvins_toon_addon/shaders/AnimeDrawingHQ.tres" id="2_s88fx"]
+[ext_resource type="PackedScene" uid="uid://ctd3jeq5u5m2v" path="res://addons/melvins_toon_addon/objects/character_light/character_light_controller_3d.tscn" id="3_0da6o"]
+[ext_resource type="PackedScene" uid="uid://4g0abud0olm8" path="res://addons/melvins_toon_addon/objects/tint_area/tint_zone.tscn" id="3_us5xl"]
 
 [sub_resource type="TorusMesh" id="TorusMesh_wvm6d"]
 
@@ -72,8 +74,102 @@ shader_parameter/rim_scene_mult_tint = Color(1, 1, 1, 1)
 shader_parameter/rim_scene_add_tint = Color(0, 0, 0, 1)
 shader_parameter/anisotropy_scene_mult_tint = Color(1, 1, 1, 1)
 shader_parameter/anisotropy_scene_add_tint = Color(0, 0, 0, 1)
-shader_parameter/character_light = Vector3(0, -1, 0)
+shader_parameter/character_light = Vector3(0, -0.781314, -0.624138)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_bfdhj"]
+radius = 1.32323
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_72ipc"]
+
+[sub_resource type="Sky" id="Sky_q574b"]
+sky_material = SubResource("ProceduralSkyMaterial_72ipc")
+
+[sub_resource type="Environment" id="Environment_364yd"]
+background_mode = 2
+background_color = Color(0.792157, 0, 0.34902, 1)
+sky = SubResource("Sky_q574b")
+sky_custom_fov = 137.8
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_uild5"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4jksp"]
+render_priority = 0
+shader = ExtResource("2_s88fx")
+shader_parameter/use_shading = true
+shader_parameter/use_extra_bright = false
+shader_parameter/use_extra_dark = false
+shader_parameter/use_metallics = false
+shader_parameter/use_specular = false
+shader_parameter/use_rim = false
+shader_parameter/use_anisotropy = false
+shader_parameter/use_emmisive = false
+shader_parameter/bright_color = Color(0.909804, 0, 0.513726, 1)
+shader_parameter/dark_color = Color(0.737255, 0, 0.270588, 1)
+shader_parameter/use_bright_map = false
+shader_parameter/use_dark_map = false
+shader_parameter/extra_bright_color = null
+shader_parameter/extra_dark_color = null
+shader_parameter/use_extra_bright_map = false
+shader_parameter/use_extra_dark_map = false
+shader_parameter/shade_threshold = 0.0
+shader_parameter/extra_bright_threshold = -0.5
+shader_parameter/extra_dark_threshold = 0.5
+shader_parameter/use_shade_threshold_map = null
+shader_parameter/use_extra_bright_threshold_map = null
+shader_parameter/use_extra_dark_threshold_map = null
+shader_parameter/metalness = 0.0
+shader_parameter/use_metalness_map = null
+shader_parameter/specular_glossiness = 15.0
+shader_parameter/specular_threshold = 0.5
+shader_parameter/specular_color = Color(1, 1, 1, 1)
+shader_parameter/use_specular_gt_map = null
+shader_parameter/use_specular_color_map = null
+shader_parameter/rim_threshold = 0.25
+shader_parameter/rim_spread = 0.5
+shader_parameter/rim_color = Color(1, 1, 1, 1)
+shader_parameter/use_rim_st_map = null
+shader_parameter/use_rim_color_map = null
+shader_parameter/anisotropy_offset = 0.0
+shader_parameter/anisotropy_rotation = 0.0
+shader_parameter/anisotropy_threshold = 0.1
+shader_parameter/anisotropy_color = Color(1, 1, 1, 1)
+shader_parameter/use_anisotropy_ort_map = null
+shader_parameter/use_anisotropy_color_map = null
+shader_parameter/dark_rim = 0.0
+shader_parameter/dark_anisotropy = 0.0
+shader_parameter/use_dark_rim_map = false
+shader_parameter/use_dark_anisotropy_map = false
+shader_parameter/bright_scene_mult_tint = Color(1, 1, 1, 1)
+shader_parameter/bright_scene_add_tint = Color(0, 0, 0, 1)
+shader_parameter/dark_scene_mult_tint = Color(1, 1, 1, 1)
+shader_parameter/dark_scene_add_tint = Color(0, 0, 0, 1)
+shader_parameter/specular_scene_mult_tint = Color(1, 1, 1, 1)
+shader_parameter/specular_scene_add_tint = Color(0, 0, 0, 1)
+shader_parameter/rim_scene_mult_tint = Color(1, 1, 1, 1)
+shader_parameter/rim_scene_add_tint = Color(0, 0, 0, 1)
+shader_parameter/anisotropy_scene_mult_tint = Color(1, 1, 1, 1)
+shader_parameter/anisotropy_scene_add_tint = Color(0, 0, 0, 1)
+shader_parameter/character_light = Vector3(0, -0.747036, 0.664784)
 
 [node name="Node3D" type="MeshInstance3D"]
 mesh = SubResource("TorusMesh_wvm6d")
 surface_material_override/0 = SubResource("ShaderMaterial_cuvi5")
+
+[node name="Tint Zone" parent="." instance=ExtResource("3_us5xl")]
+
+[node name="Area3D" type="CollisionShape3D" parent="Tint Zone"]
+shape = SubResource("SphereShape3D_bfdhj")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_364yd")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 0)
+mesh = SubResource("CapsuleMesh_uild5")
+surface_material_override/0 = SubResource("ShaderMaterial_4jksp")
+
+[node name="Character Light3D Controller HQ" parent="MeshInstance3D" instance=ExtResource("3_0da6o")]
+transform = Transform3D(1, 0, 0, 0, -0.664784, 0.747036, 0, -0.747036, -0.664784, 0, 0, 0)
+
+[node name="Character Light3D Controller HQ" parent="." instance=ExtResource("3_0da6o")]
+transform = Transform3D(1, 0, 0, 0, 0.624138, 0.781314, 0, -0.781314, 0.624138, 0, 0, 0)
