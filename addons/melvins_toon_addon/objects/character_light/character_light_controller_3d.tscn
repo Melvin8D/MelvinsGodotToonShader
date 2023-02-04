@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://ctd3jeq5u5m2v"]
+
+[ext_resource type="Script" path="res://MelvinsToonAddon/Objects/CharacterLight/CharacterLightControllerHQ.gd" id="1_n47qd"]
+
+[sub_resource type="BoxShape3D" id="1"]
+size = Vector3(0.1, 0.1, 0.1)
+
+[node name="Character Light3D Controller HQ" type="Node3D"]
+script = ExtResource("1_n47qd")
+
+[node name="Area3D" type="Area3D" parent="." groups=["Character Light3D"]]
+collision_layer = 2147483648
+collision_mask = 2147483648
+monitorable = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+shape = SubResource("1")
+
+[connection signal="area_entered" from="Area3D" to="." method="tintzone_enter"]
+[connection signal="area_exited" from="Area3D" to="." method="tintzone_exit"]

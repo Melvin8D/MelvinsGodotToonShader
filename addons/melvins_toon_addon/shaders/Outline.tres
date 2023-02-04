@@ -1,0 +1,57 @@
+[gd_resource type="Shader" format=3 uid="uid://jjvcpb8im52u"]
+
+[resource]
+code = "//While next pass can work sometimes, it is recommended to apply this to a manual mesh
+//That has proper normals and smooth shading, as improper normals will be needed for
+//Certain styles of anime shading.
+shader_type spatial;
+render_mode cull_front, unshaded;
+
+uniform int outline_mode : hint_range(0, 2, 1) = 1;
+//0 = constant world space, 1 = sqrt screen space, 2 = constant screen space
+uniform vec4 outline_color : source_color;
+uniform float outline_width : hint_range(0.0, 100.0, .001) = 1.0;
+uniform bool use_width_map = false;
+uniform sampler2D width_map;
+uniform bool use_color_map = false;
+uniform sampler2D color_map;
+
+void vertex() {
+	vec4 clip_position = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
+	vec3 clip_normal = mat3(PROJECTION_MATRIX) * (mat3(MODELVIEW_MATRIX) * NORMAL);
+	
+	float width_value = outline_width;
+	if (use_width_map)
+	{
+		width_value *= texture(width_map, UV).r;
+	}
+	vec2 offset;
+	switch(outline_mode)
+	{
+		case 0:
+			offset = normalize(clip_normal.xy) / VIEWPORT_SIZE * width_value * 2.0;
+			break;
+		case 1:
+			offset = normalize(clip_normal.xy) / VIEWPORT_SIZE * sqrt(clip_position.w) * width_value * 2.0;
+			break;
+		case 2:
+			offset = normalize(clip_normal.xy) / VIEWPORT_SIZE * clip_position.w * width_value * 2.0;
+			break;
+	}
+	
+	clip_position.xy += offset;
+	
+	POSITION = clip_position;
+}
+void fragment() {
+	vec3 outline_color_value;
+	if (use_color_map)
+	{
+		outline_color_value = texture(color_map, UV).rgb;
+	}
+	else
+	{
+		outline_color_value = outline_color.rgb;
+	}
+	ALBEDO = outline_color_value.rgb;
+}"

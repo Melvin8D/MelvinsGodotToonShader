@@ -1,0 +1,276 @@
+[gd_resource type="Shader" format=3 uid="uid://lgr8llo7ynkp"]
+
+[resource]
+code = "//Final Shader by Melvin8D
+//Uses various others
+
+shader_type spatial;
+render_mode unshaded;
+
+const float THRESHOLD_OFFSET = 0.0000005;
+
+uniform bool use_shading = true; //Use basic shading, don't know why youd want this off tbh
+uniform bool use_extra_bright = false;
+uniform bool use_extra_dark = false;
+uniform bool use_metallics = false; //Use metallic texture
+uniform bool use_specular = false; //Use a specular highlight
+uniform bool use_rim = false; //Use rim highlights
+uniform bool use_anisotropy = false; //Use a pseudo anisotropic highlight that works well for hair
+uniform bool use_emmisive = false; //Uses Emmisive texture, use alpha to cut off
+
+uniform vec4 bright_color : source_color = vec4(1.0);
+uniform vec4 dark_color : source_color = vec4(0.0,0.0,0.0,1.0);
+uniform bool use_bright_map = false;
+uniform bool use_dark_map = false;
+uniform sampler2D bright_map : source_color, filter_nearest;
+uniform sampler2D dark_map : source_color, filter_nearest;
+
+uniform vec4 extra_bright_color : source_color;
+uniform vec4 extra_dark_color : source_color;
+uniform bool use_extra_bright_map = false;
+uniform bool use_extra_dark_map = false;
+uniform sampler2D extra_bright_map : source_color, filter_nearest;
+uniform sampler2D extra_dark_map : source_color, filter_nearest;
+
+uniform float shade_threshold : hint_range(-1.0, 1.0, 0.001) = 0.0;
+uniform float extra_bright_threshold : hint_range(-1.0, 1.0, 0.001) = -0.5;
+uniform float extra_dark_threshold : hint_range(-1.0, 1.0, 0.001) = 0.5;
+uniform bool use_shade_threshold_map;
+uniform bool use_extra_bright_threshold_map;
+uniform bool use_extra_dark_threshold_map;
+uniform sampler2D shade_threshold_map : filter_nearest;
+
+uniform float metalness: hint_range(0.0, 1.0, 0.001) = 0.0;
+uniform bool use_metalness_map;
+uniform sampler2D mat_cap : source_color, filter_nearest;
+uniform sampler2D metalness_map : filter_nearest;
+
+uniform float specular_glossiness : hint_range(0.0, 50.0, 0.1) = 15.0;
+uniform float specular_threshold : hint_range(0.0001, 1.0, 0.001) = 0.5;
+uniform vec4 specular_color : source_color = vec4(1.0);
+uniform bool use_specular_gt_map;
+uniform bool use_specular_color_map;
+uniform sampler2D specular_gt_map : filter_nearest;
+uniform sampler2D specular_color_map : source_color, filter_nearest;
+
+uniform float rim_threshold : hint_range(0.00, 1.0, 0.001) = 0.25;
+uniform float rim_spread : hint_range(0.0, 1.0, 0.001) = 0.5;
+uniform vec4 rim_color : source_color = vec4(1.0);
+uniform bool use_rim_st_map;
+uniform bool use_rim_color_map;
+uniform sampler2D rim_st_map : filter_nearest;
+uniform sampler2D rim_color_map : source_color, filter_nearest;
+
+uniform float anisotropy_offset : hint_range(-1.0, 1.0, .001) = 0.0;
+uniform float anisotropy_rotation : hint_range(0.0, 1.0, .001) = 0.0;
+uniform float anisotropy_threshold : hint_range(0.0, 1.0, .001) = 0.1;
+uniform vec4 anisotropy_color : source_color = vec4(1.0);
+uniform bool use_anisotropy_ort_map;
+uniform bool use_anisotropy_color_map;
+uniform sampler2D anisotropy_ort_map : filter_nearest;
+uniform sampler2D anisotropy_color_map : source_color, filter_nearest;
+
+uniform float dark_rim : hint_range(0.0, 1.0, 0.001) = 0.0;
+uniform float dark_anisotropy : hint_range(0.0, 1.0, 0.001) = 0.0;
+uniform bool use_dark_rim_map = false;
+uniform bool use_dark_anisotropy_map = false;
+uniform sampler2D dark_highlight_map : filter_nearest;
+
+uniform vec4 bright_scene_mult_tint : source_color = vec4(1.0);
+uniform vec4 bright_scene_add_tint : source_color = vec4(0.0, 0.0, 0.0, 1.0);
+uniform vec4 dark_scene_mult_tint : source_color = vec4(1.0);
+uniform vec4 dark_scene_add_tint : source_color = vec4(0.0, 0.0, 0.0, 1.0);
+uniform vec4 specular_scene_mult_tint : source_color = vec4(1.0);
+uniform vec4 specular_scene_add_tint : source_color = vec4(0.0, 0.0, 0.0, 1.0);
+uniform vec4 rim_scene_mult_tint : source_color = vec4(1.0);
+uniform vec4 rim_scene_add_tint : source_color = vec4(0.0, 0.0, 0.0, 1.0);
+uniform vec4 anisotropy_scene_mult_tint : source_color = vec4(1.0);
+uniform vec4 anisotropy_scene_add_tint : source_color = vec4(0.0, 0.0, 0.0, 1.0);
+
+uniform sampler2D emmisive_map : source_color, filter_nearest;
+
+uniform vec3 character_light = vec3(0.0, -1.0, 0.0);
+
+void fragment()
+{
+	vec3 used_light = -(vec4(character_light, 1.0) * INV_VIEW_MATRIX).xyz;
+	float n_dot_l = dot(NORMAL, used_light); //dot product of normal and light
+	vec3 v_half_l = normalize(VIEW + used_light); //something that halves view and light together
+	float is_lit; // = smoothstep(shade_threshold - THRESHOLD_OFFSET, shade_threshold, n_dot_l)
+	vec3 diffuse;
+	vec3 threshold_texture;
+	vec2 dark_highlight_texture;
+	if (use_shade_threshold_map || use_extra_bright_threshold_map || use_extra_dark_threshold_map)
+	{
+		threshold_texture = 2.0 * texture(shade_threshold_map, UV).rgb - 1.0;
+	}
+	if (use_dark_rim_map || use_dark_anisotropy_map)
+	{
+		dark_highlight_texture = texture(dark_highlight_map, UV).rg;
+	}
+
+	if (use_shading)
+	{
+		vec3 bright_value = bright_color.rgb;
+		vec3 dark_value = dark_color.rgb;
+		float shade_threshold_value = shade_threshold;
+		if (use_bright_map)
+		{
+			bright_value = texture(bright_map, UV).rgb;
+		}
+		if (use_dark_map)
+		{
+			dark_value = texture(dark_map, UV).rgb;
+		}
+		if (use_shade_threshold_map)
+		{
+			shade_threshold_value = threshold_texture.r;
+		}
+
+		bright_value = bright_value * bright_scene_mult_tint.rgb + bright_scene_add_tint.rgb;
+		dark_value = dark_value * dark_scene_mult_tint.rgb + dark_scene_add_tint.rgb;
+		is_lit = smoothstep(shade_threshold_value - THRESHOLD_OFFSET, shade_threshold_value, n_dot_l);
+		diffuse = mix(dark_value, bright_value, is_lit);
+	}
+	
+	if (use_extra_bright)
+	{
+		vec3 extra_bright_value = extra_bright_color.rgb;
+		float extra_bright_threshold_value = extra_bright_threshold;
+		if (use_extra_bright_map)
+		{
+			extra_bright_value = texture(extra_bright_map, UV).rgb;
+		}
+		if (use_extra_bright_threshold_map)
+		{
+			extra_bright_threshold_value = threshold_texture.g;
+		}
+		float extra_bright_is_lit = smoothstep(extra_bright_threshold_value - THRESHOLD_OFFSET, extra_bright_threshold_value, n_dot_l);
+		extra_bright_value = extra_bright_value * bright_scene_mult_tint.rgb + bright_scene_add_tint.rgb;
+		diffuse = mix(diffuse, extra_bright_value, extra_bright_is_lit);
+	}
+	
+	if (use_extra_dark)
+	{
+		vec3 extra_dark_value = extra_dark_color.rgb;
+		float extra_dark_threshold_value = extra_dark_threshold;
+		if (use_extra_dark_map)
+		{
+			extra_dark_value = texture(extra_dark_map, UV).rgb;
+		}
+		if (use_extra_dark_threshold_map)
+		{
+			extra_dark_threshold_value = threshold_texture.g;
+		}
+		float extra_dark_is_lit = smoothstep(extra_dark_threshold_value - THRESHOLD_OFFSET, extra_dark_threshold_value, n_dot_l);
+		extra_dark_value = extra_dark_value * dark_scene_mult_tint.rgb + dark_scene_add_tint.rgb;
+		diffuse = mix(extra_dark_value, diffuse, extra_dark_is_lit);
+	}
+
+	if (use_metallics)
+	{
+		vec2 v_n = (NORMAL.xy / 2.0) + vec2(0.5, 0.5);
+		float metalness_value = metalness;
+		if (use_metalness_map)
+		{
+			metalness_value = texture(metalness_map, UV).r;
+		}
+
+		v_n.y = (v_n.y * -1.0) + 1.0;
+		diffuse = mix(diffuse, texture(mat_cap, v_n).rgb * diffuse, metalness_value);
+	}
+	
+	if (use_specular)
+	{
+		float n_dot_h = dot(NORMAL, v_half_l); //dot product of normal and v_half_l
+		vec4 specular_color_value = specular_color;
+		float specular_glossiness_value = specular_glossiness;
+		float specular_threshold_value = specular_threshold;
+		if (use_specular_color_map)
+		{
+			specular_color_value = texture(specular_color_map, UV);
+		}
+
+		if (use_specular_gt_map)
+		{
+			vec4 specular_gt_texture = texture(specular_gt_map, UV);
+			specular_glossiness_value = specular_gt_texture.r * 50.0;
+			specular_threshold_value = specular_gt_texture.g;
+		}
+
+		float specular_value = pow(clamp(n_dot_h * is_lit, 0.0, 1.0), specular_glossiness_value * specular_glossiness_value);
+		specular_value = step(specular_threshold_value, specular_value);
+		specular_color_value.rgb = specular_color_value.rgb * specular_scene_mult_tint.rgb + specular_scene_add_tint.rgb;
+		diffuse = mix(diffuse, specular_color_value.rgb, specular_value * specular_color_value.a * is_lit);
+	}
+
+	if (use_rim)
+	{
+		float iVdotN = 1.0 - dot(VIEW, NORMAL);
+		vec4 rim_color_value = rim_color;
+		float i_rim_spread_value = 1.0 - rim_spread;
+		float i_rim_threshold_value = 1.0 - rim_threshold;
+		if (use_rim_color_map)
+		{
+			vec4 rim_color_texture = texture(rim_color_map, UV);
+			rim_color_value = rim_color_texture;
+		}
+		if (use_rim_st_map)
+		{
+			vec4 rim_st_texture = texture(rim_st_map, UV);
+			i_rim_spread_value = 1.0 - rim_st_texture.r;
+			i_rim_threshold_value = 1.0 - rim_st_texture.g;
+		}
+		float dark_rim_value = dark_rim;
+		if (use_dark_rim_map)
+		{
+			dark_rim_value = dark_highlight_texture.r;
+		}
+		
+		float rim_value = iVdotN * pow(abs(n_dot_l), i_rim_spread_value);
+		rim_value = step(i_rim_threshold_value, rim_value);
+		rim_color_value.rgb = rim_color_value.rgb * rim_scene_mult_tint.rgb + rim_scene_add_tint.rgb;
+		diffuse = mix(diffuse, rim_color_value.rgb, rim_value * rim_color_value.a * (dark_rim_value + is_lit));
+	}
+
+	if (use_anisotropy)
+	{
+		float anisotropy_rotation_value = 2.0 * anisotropy_rotation;
+		float anisotropy_threshold_value = 1.0 - anisotropy_threshold;
+		float anisotropy_offset_value = anisotropy_offset;
+		vec4 anisotropy_color_texture = texture(anisotropy_color_map, UV);
+		vec4 anisotropy_color_value = anisotropy_color;
+		float dark_anisotropy_value = dark_anisotropy;
+		if (use_anisotropy_color_map)
+		{
+			anisotropy_color_value = anisotropy_color_texture;
+		}
+		if (use_anisotropy_ort_map)
+		{
+			vec4 anisotropy_ort_texture = texture(anisotropy_ort_map, UV);
+			anisotropy_offset_value = 2.0 * anisotropy_ort_texture.r - 1.0;
+			anisotropy_rotation_value = 2.0 * anisotropy_ort_texture.g;
+			anisotropy_threshold_value = 1.0 - anisotropy_ort_texture.b;
+		}
+		if (use_dark_anisotropy_map)
+		{
+			dark_anisotropy_value = dark_highlight_texture.g;
+		}
+
+		vec3 anisotropy_rotation_calc = (
+			sin(anisotropy_rotation_value*3.141592) * TANGENT) 
+			+ cos(anisotropy_rotation_value*3.141592) * BINORMAL;
+		vec3 anisotropy_value = vec3(step(
+			anisotropy_threshold_value, 
+			1.0-abs(dot(anisotropy_rotation_calc + anisotropy_offset_value, v_half_l
+			))));
+		anisotropy_color_value.rgb = anisotropy_color_value.rgb * anisotropy_scene_mult_tint.rgb + anisotropy_scene_add_tint.rgb;
+		diffuse = mix(diffuse, anisotropy_color_value.rgb, anisotropy_value * clamp(dark_anisotropy_value + is_lit, 0.0, 1.0) * anisotropy_color_value.a);
+	}
+	if (use_emmisive)
+	{
+		vec4 emmisive_texture = texture(emmisive_map, UV);
+		diffuse = mix(diffuse, emmisive_texture.rgb, emmisive_texture.a);
+	}
+	ALBEDO = diffuse.rgb;
+}"
