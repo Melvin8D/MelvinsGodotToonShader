@@ -1,0 +1,29 @@
+[gd_scene load_steps=6 format=3 uid="uid://cw7tpi4ehhlvb"]
+
+[ext_resource type="Material" uid="uid://dup7oty4rl868" path="res://addons/melvins_toon_addon/sample/MaterialTest.tres" id="1_jmy42"]
+[ext_resource type="PackedScene" uid="uid://bp5n84ann5kry" path="res://addons/melvins_toon_addon/objects/character_light/character_light.tscn" id="2_04cj2"]
+[ext_resource type="PackedScene" uid="uid://cgjjhgmjgg7m5" path="res://addons/melvins_toon_addon/objects/tint_zone/tint_zone.tscn" id="3_jm6fy"]
+
+[sub_resource type="TorusMesh" id="TorusMesh_wm6mx"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_8trf5"]
+
+[node name="Mesh" type="MeshInstance3D"]
+mesh = SubResource("TorusMesh_wm6mx")
+surface_material_override/0 = ExtResource("1_jmy42")
+
+[node name="Character Light" parent="." instance=ExtResource("2_04cj2")]
+transform = Transform3D(0.598675, -0.400496, 0.69368, -0.800992, -0.299338, 0.518468, 0, -0.866025, -0.5, 0, 0, 0)
+Materials = [ExtResource("1_jmy42")]
+
+[node name="Tint Zone" parent="." instance=ExtResource("3_jm6fy")]
+BrightMultColor = Color(1, 0.772549, 0.733333, 1)
+DarkMultColor = Color(0.984314, 0.756863, 0.843137, 1)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Tint Zone"]
+shape = SubResource("BoxShape3D_8trf5")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.866025, 0.129409, -0.482963, 3.42583e-08, 0.965926, 0.258819, 0.5, -0.224144, 0.836516, 0, 1, 3)
+
+[editable path="Character Light"]

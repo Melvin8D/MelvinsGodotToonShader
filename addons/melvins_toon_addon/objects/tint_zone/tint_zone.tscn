@@ -1,0 +1,26 @@
+[gd_scene load_steps=2 format=3 uid="uid://cgjjhgmjgg7m5"]
+
+[ext_resource type="Script" path="res://addons/melvins_toon_addon/objects/tint_zone/TintZone.cs" id="1_6wchh"]
+
+[node name="Tint Zone" type="Area3D" node_paths=PackedStringArray("VisibilityObject") groups=["Tint Zone"]]
+collision_layer = 2147483648
+collision_mask = 2147483648
+input_ray_pickable = false
+monitoring = false
+script = ExtResource("1_6wchh")
+BrightAddColor = Color(0, 0, 0, 1)
+BrightMultColor = Color(1, 1, 1, 1)
+DarkAddColor = Color(0, 0, 0, 1)
+DarkMultColor = Color(1, 1, 1, 1)
+SpecularAddColor = Color(0, 0, 0, 1)
+SpecularMultColor = Color(1, 1, 1, 1)
+RimAddColor = Color(0, 0, 0, 1)
+RimMultColor = Color(1, 1, 1, 1)
+AnisotropyAddColor = Color(0, 0, 0, 1)
+AnisotropyMultColor = Color(1, 1, 1, 1)
+VisibilityObject = NodePath("VisibleOnScreenNotifier3D")
+
+[node name="VisibleOnScreenNotifier3D" type="VisibleOnScreenNotifier3D" parent="."]
+
+[connection signal="screen_entered" from="VisibleOnScreenNotifier3D" to="." method="ScreenEntered"]
+[connection signal="screen_exited" from="VisibleOnScreenNotifier3D" to="." method="ScreenExited"]

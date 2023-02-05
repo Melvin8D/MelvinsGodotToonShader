@@ -1,0 +1,62 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://dup7oty4rl868"]
+
+[ext_resource type="Shader" uid="uid://lgr8llo7ynkp" path="res://addons/melvins_toon_addon/shaders/AnimeDrawingHQ.tres" id="1_jdcyh"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_jdcyh")
+shader_parameter/use_shading = true
+shader_parameter/use_extra_bright = false
+shader_parameter/use_extra_dark = false
+shader_parameter/use_metallics = false
+shader_parameter/use_specular = true
+shader_parameter/use_rim = true
+shader_parameter/use_anisotropy = true
+shader_parameter/use_emmisive = false
+shader_parameter/bright_color = Color(1, 1, 0, 1)
+shader_parameter/dark_color = Color(0.45098, 0.45098, 0.0431373, 1)
+shader_parameter/use_bright_map = false
+shader_parameter/use_dark_map = false
+shader_parameter/extra_bright_color = null
+shader_parameter/extra_dark_color = null
+shader_parameter/use_extra_bright_map = false
+shader_parameter/use_extra_dark_map = false
+shader_parameter/shade_threshold = 0.0
+shader_parameter/extra_bright_threshold = -0.5
+shader_parameter/extra_dark_threshold = 0.5
+shader_parameter/use_shade_threshold_map = null
+shader_parameter/use_extra_bright_threshold_map = null
+shader_parameter/use_extra_dark_threshold_map = null
+shader_parameter/metalness = 0.0
+shader_parameter/use_metalness_map = null
+shader_parameter/specular_glossiness = 15.0
+shader_parameter/specular_threshold = 0.5
+shader_parameter/specular_color = Color(1, 1, 1, 1)
+shader_parameter/use_specular_gt_map = null
+shader_parameter/use_specular_color_map = null
+shader_parameter/rim_threshold = 0.572
+shader_parameter/rim_spread = 1.0
+shader_parameter/rim_color = Color(1, 1, 1, 1)
+shader_parameter/use_rim_st_map = null
+shader_parameter/use_rim_color_map = null
+shader_parameter/anisotropy_offset = 4.75e-08
+shader_parameter/anisotropy_rotation = 0.25
+shader_parameter/anisotropy_threshold = 0.1
+shader_parameter/anisotropy_color = Color(1, 1, 1, 1)
+shader_parameter/use_anisotropy_ort_map = null
+shader_parameter/use_anisotropy_color_map = null
+shader_parameter/dark_rim = 0.158
+shader_parameter/dark_anisotropy = 0.421
+shader_parameter/use_dark_rim_map = false
+shader_parameter/use_dark_anisotropy_map = false
+shader_parameter/bright_scene_mult_tint = Color(1, 1, 1, 1)
+shader_parameter/bright_scene_add_tint = Color(0, 0, 0, 1)
+shader_parameter/dark_scene_mult_tint = Color(1, 1, 1, 1)
+shader_parameter/dark_scene_add_tint = Color(0, 0, 0, 1)
+shader_parameter/specular_scene_mult_tint = Color(1, 1, 1, 1)
+shader_parameter/specular_scene_add_tint = Color(0, 0, 0, 1)
+shader_parameter/rim_scene_mult_tint = Color(1, 1, 1, 1)
+shader_parameter/rim_scene_add_tint = Color(0, 0, 0, 1)
+shader_parameter/anisotropy_scene_mult_tint = Color(1, 1, 1, 1)
+shader_parameter/anisotropy_scene_add_tint = Color(0, 0, 0, 1)
+shader_parameter/character_light = Vector3(-0.69368, -0.518468, 0.5)
